@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TS TOOLS – Tài khoản</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ĐĂNG NHẬP -->
+  <section id="auth" class="auth hidden">
+    <div class="auth-card">
+      <div class="brand big"><img src="logo.png" alt=""><span>TS TOOLS</span></div>
+      <p class="muted">Thư viện family & công cụ Revit MEP</p>
+      <form id="loginForm">
+        <h2>Đăng nhập</h2>
+        <label>Email<input type="email" id="loginEmail" required autocomplete="username"></label>
+        <label>Mật khẩu<input type="password" id="loginPass" required autocomplete="current-password"></label>
+        <button class="btn primary wide" type="submit">Đăng nhập</button>
+        <a href="#" id="forgotLink" class="link">Quên mật khẩu?</a>
+      </form>
+      <form id="setPassForm" class="hidden">
+        <h2>Đặt mật khẩu</h2>
+        <p class="muted">Bạn được mời vào TS TOOLS – đặt mật khẩu để đăng nhập.</p>
+        <label>Mật khẩu mới<input type="password" id="newPass1" required minlength="8" autocomplete="new-password"></label>
+        <label>Nhập lại<input type="password" id="newPass2" required minlength="8" autocomplete="new-password"></label>
+        <button class="btn primary wide" type="submit">Lưu mật khẩu</button>
+      </form>
+      <p id="authMsg" class="msg"></p>
+      <p class="muted small">Chỉ tài khoản được cấp mới truy cập được. Liên hệ quản trị TS TOOLS để được cấp.</p>
+    </div>
+  </section>
+
+  <!-- CỔNG TÀI KHOẢN -->
+  <section id="app" class="hidden">
+    <header class="top">
+      <div class="brand"><img src="logo.png" alt=""><span>TS TOOLS</span></div>
+      <div class="promo"><span id="tagline"></span><a id="buyBtn" class="btn cta" href="#pricing">MUA TS TOOLS</a></div>
+      <div class="user" id="userBox"><span class="avatar">👤</span><span id="userName"></span>
+        <div class="menu"><a href="#profile">Profile</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>
+    </header>
+    <div class="layout">
+      <nav class="side">
+        <a href="#profile" data-page="profile"><i>👤</i>Profile</a>
+        <a href="#license" data-page="license"><i>🔑</i>License của bạn</a>
+        <a href="#orders" data-page="orders"><i>＄</i>Đơn hàng</a>
+        <a href="#pricing" data-page="pricing"><i>🛒</i>Bảng giá Addin</a>
+        <a href="#family" data-page="family"><i>📦</i>TS Family</a>
+        <a href="#download" data-page="download"><i>⬇</i>Download bộ cài</a>
+      </nav>
+      <main id="main"></main>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
