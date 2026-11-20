@@ -165,3 +165,8 @@ tr:hover td { background: #fafcfe; }
   .tabs { overflow-x: auto; } .nav-in { gap: 12px; padding: 0 12px; } #userName, .caret { display: none; }
   .fgrid { grid-template-columns: 1fr; } main { padding: 16px 12px; } .hero { padding: 24px 20px; } .hero h1 { font-size: 24px; }
 }
+
+/* đăng ký / quản trị */
+.auth-seg { margin-bottom: 18px; } .auth-seg button { padding: 9px 18px; }
+.badge { font-style: normal; display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: #ff5d5d; color: #fff; font: 700 11px/18px inherit; text-align: center; }
+td .btn { padding: 7px 12px; font-size: 13px; }

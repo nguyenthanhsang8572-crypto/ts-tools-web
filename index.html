@@ -25,8 +25,19 @@
     </div>
     <div class="auth-main">
       <div class="auth-card">
+        <div class="seg auth-seg" id="authSeg"><button data-f="login" class="on">Đăng nhập</button><button data-f="signup">Đăng ký</button></div>
+        <form id="signupForm" class="hidden">
+          <h2>Đăng ký tài khoản</h2><p class="muted">Sau khi đăng ký, quản trị TS TOOLS sẽ phê duyệt để bạn tải được family.</p>
+          <div class="fgrid">
+            <label>Họ và tên đệm<input name="ho_ten_dem" required></label><label>Tên<input name="ten" required></label>
+            <label>Số điện thoại<input name="phone" required></label><label>Công ty<input name="company"></label>
+          </div>
+          <label>Email<input type="email" name="email" required autocomplete="username"></label>
+          <label>Mật khẩu (≥ 8 ký tự)<input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+          <button class="btn primary wide" type="submit">Gửi đăng ký →</button>
+        </form>
         <form id="loginForm">
-          <h2>Đăng nhập</h2><p class="muted">Dùng email đã được cấp quyền.</p>
+          <h2>Đăng nhập</h2><p class="muted">Chưa có tài khoản? Chọn <b>Đăng ký</b> ở trên.</p>
           <label>Email<input type="email" id="loginEmail" required autocomplete="username"></label>
           <label>Mật khẩu<input type="password" id="loginPass" required autocomplete="current-password"></label>
           <button class="btn primary wide" type="submit">Đăng nhập →</button>
@@ -39,7 +50,7 @@
           <button class="btn primary wide" type="submit">Lưu mật khẩu</button>
         </form>
         <p id="authMsg" class="msg"></p>
-        <p class="muted small">Chưa có tài khoản? Liên hệ quản trị TS TOOLS để được cấp.</p>
+        <p class="muted small">Tài khoản mới cần quản trị TS TOOLS phê duyệt trước khi tải family.</p>
       </div>
     </div>
   </section>
@@ -55,6 +66,7 @@
           <a href="#download" data-page="download">Bộ cài</a>
           <a href="#license" data-page="license">License</a>
           <a href="#orders" data-page="orders">Đơn hàng</a>
+          <a href="#admin" data-page="admin" id="adminTab" class="hidden">Quản trị <i class="badge hidden" id="pendBadge"></i></a>
         </nav>
         <div class="me" id="me"><span class="av" id="avatar">?</span><span id="userName"></span><span class="caret">▾</span>
           <div class="drop"><a href="#account">Tài khoản</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>

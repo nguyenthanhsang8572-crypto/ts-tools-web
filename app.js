@@ -40,6 +40,19 @@
     if (error) { $("#authMsg").textContent = error.message; return; }
     history.replaceState(null, "", location.pathname + "#library"); toast("Đã đặt mật khẩu."); start();
   });
+  // ---- chuyển Đăng nhập / Đăng ký ----
+  $("#authSeg").querySelectorAll("button").forEach((b) => b.onclick = () => {
+    $("#authSeg").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    $("#loginForm").classList.toggle("hidden", b.dataset.f !== "login"); $("#signupForm").classList.toggle("hidden", b.dataset.f !== "signup"); $("#authMsg").textContent = "";
+  });
+  $("#signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); $("#authMsg").style.color = ""; $("#authMsg").textContent = "";
+    const f = Object.fromEntries(new FormData(e.target));
+    const { data, error } = await sb.auth.signUp({ email: f.email.trim(), password: f.password,
+      options: { data: { ho_ten_dem: f.ho_ten_dem.trim(), ten: f.ten.trim(), phone: f.phone.trim(), company: (f.company || "").trim() } } });
+    if (error) { $("#authMsg").textContent = /registered/i.test(error.message) ? "Email này đã có tài khoản – chọn Đăng nhập." : error.message; return; }
+    if (!data.session) { $("#authMsg").style.color = "var(--ok)"; $("#authMsg").textContent = "Đã gửi đăng ký – đăng nhập sau khi được phê duyệt."; }
+  });
   $("#logoutBtn").addEventListener("click", async (e) => { e.preventDefault(); await sb.auth.signOut(); });
   $("#me").addEventListener("click", (e) => { e.stopPropagation(); $("#me").classList.toggle("open"); });
   document.addEventListener("click", () => $("#me").classList.remove("open"));
@@ -55,7 +68,10 @@
     const { data: { session: s } } = await sb.auth.getSession(); session = s; if (!s) return showAuth(false);
     $("#auth").classList.add("hidden"); $("#app").classList.remove("hidden");
     const { data } = await sb.from("profiles").select("*").eq("id", s.user.id).maybeSingle(); profile = data || {};
-    showName(); route();
+    showName();
+    $("#adminTab").classList.toggle("hidden", !profile.is_admin);
+    if (profile.is_admin) lib({ op: "admin_list" }).then((l) => { const n = l.filter((x) => x.status === "pending").length; const b = $("#pendBadge"); b.textContent = n; b.classList.toggle("hidden", !n); }).catch(() => {});
+    route();
   }
   function showName() {
     const n = [profile.ho_ten_dem, profile.ten].filter(Boolean).join(" ") || session.user.email;
@@ -64,11 +80,59 @@
   window.addEventListener("hashchange", () => session && route());
 
   // ---------------- điều hướng ----------------
-  const pages = { library: pageLibrary, video: pageVideo, download: pageDownload, license: pageLicense, orders: pageOrders, account: pageAccount };
+  const pages = { library: pageLibrary, video: pageVideo, download: pageDownload, license: pageLicense, orders: pageOrders, account: pageAccount, admin: pageAdmin };
   function route() {
-    let p = location.hash.replace("#", "").split("?")[0]; if (!pages[p]) p = "library";
+    let p = location.hash.replace("#", "").split("?")[0]; if (!pages[p] || (p === "admin" && !profile.is_admin)) p = "library";
     document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.dataset.page === p));
-    $("#me").classList.remove("open"); window.scrollTo(0, 0); pages[p]($("#main"));
+    $("#me").classList.remove("open"); window.scrollTo(0, 0);
+    // chưa được duyệt / bị khóa: không vào Thư viện / Bộ cài
+    if (profile.status !== "approved" && (p === "library" || p === "download")) return pagePending($("#main"));
+    pages[p]($("#main"));
+  }
+  function pagePending(m) {
+    const locked = profile.status === "locked";
+    m.innerHTML = `<section class="hero"><h1>${locked ? "Tài khoản đang bị <em>khóa</em>" : "Đang chờ <em>phê duyệt</em>"}</h1>
+      <div style="color:#a9c1d9;max-width:680px">${locked ? "Tài khoản của bạn đã bị quản trị khóa quyền tải family. Liên hệ quản trị TS TOOLS nếu cần mở lại."
+        : "Cảm ơn bạn đã đăng ký TS TOOLS. Quản trị sẽ xem và phê duyệt tài khoản – sau khi được duyệt, bạn đăng nhập lại để tải family. Trong lúc chờ, bạn có thể xem Video hướng dẫn và cập nhật thông tin Tài khoản."}</div>
+      <div class="stats"><span>Email: <b>${esc(session.user.email)}</b></span><span>Trạng thái: <b>${locked ? "Bị khóa" : "Chờ duyệt"}</b></span></div>
+      <a class="btn primary" href="#video">Xem video hướng dẫn</a> <a class="btn" style="margin-left:8px" href="#account">Cập nhật tài khoản</a></section>`;
+  }
+
+  // ---------------- Quản trị (chỉ is_admin) ----------------
+  let admF = "pending";
+  async function pageAdmin(m) {
+    m.innerHTML = `<div class="ptitle"><h2>Quản trị tài khoản</h2><span>Duyệt / khóa / xóa người dùng</span></div>
+      <div class="toolbar"><div class="seg" id="aseg"><button data-f="pending">Chờ duyệt</button><button data-f="approved">Đã duyệt</button><button data-f="locked">Bị khóa</button><button data-f="">Tất cả</button></div>
+      <input id="aq" placeholder="Tìm theo tên / email / công ty…" style="max-width:320px"></div><div class="panel" id="at"><div class="empty">Đang tải…</div></div>`;
+    let list = [];
+    try { list = await lib({ op: "admin_list" }); } catch (e) { $("#at").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    const S = { pending: ["Chờ duyệt", "warn"], approved: ["Đã duyệt", "ok"], locked: ["Bị khóa", "bad"] };
+    const draw = () => {
+      $("#aseg").querySelectorAll("button").forEach((b) => { const n = b.dataset.f ? list.filter((x) => x.status === b.dataset.f).length : list.length; b.textContent = b.textContent.replace(/ \(\d+\)$/, "") + ` (${n})`; b.classList.toggle("on", b.dataset.f === admF); });
+      const q = $("#aq").value.trim().toLowerCase();
+      const rows = list.filter((x) => (!admF || x.status === admF) && (!q || [x.ho_ten_dem, x.ten, x.email, x.company, x.phone].join(" ").toLowerCase().includes(q)));
+      $("#at").innerHTML = rows.length ? `<table><thead><tr><th>Người dùng</th><th>Liên hệ</th><th>Công ty</th><th>Đăng ký</th><th>Đăng nhập cuối</th><th>Lượt tải</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows.map((x) => {
+        const s = S[x.status] || [x.status, "gray"]; const me = x.id === session.user.id;
+        const acts = me ? `<span class="muted small">(bạn${x.is_admin ? " · quản trị" : ""})</span>` : [
+          x.status !== "approved" ? `<button class="btn primary" data-a="approved" data-id="${x.id}">✓ Duyệt</button>` : "",
+          x.status === "approved" ? `<button class="btn" data-a="locked" data-id="${x.id}">Khóa</button>` : "",
+          `<button class="btn" data-a="delete" data-id="${x.id}" style="color:var(--bad)">Xóa</button>`].join(" ");
+        return `<tr><td><b>${esc([x.ho_ten_dem, x.ten].filter(Boolean).join(" ") || "—")}</b>${x.is_admin ? ` <span class="pill cy">Quản trị</span>` : ""}</td>
+          <td>${esc(x.email)}<div class="muted small">${esc(x.phone)}</div></td><td>${esc(x.company) || "—"}</td><td>${dt(x.created_at)}</td><td>${dt(x.last_sign_in_at)}</td>
+          <td>${x.downloads}</td><td><span class="pill ${s[1]}">${s[0]}</span></td><td style="white-space:nowrap">${acts}</td></tr>`; }).join("")}</tbody></table>` : `<div class="empty">Không có tài khoản nào.</div>`;
+      $("#at").querySelectorAll("[data-a]").forEach((b) => b.onclick = async () => {
+        const x = list.find((y) => y.id === b.dataset.id); const who = x.email;
+        if (b.dataset.a === "delete" && !confirm(`Xóa hẳn tài khoản ${who}? (không khôi phục được)`)) return;
+        b.disabled = true;
+        try {
+          if (b.dataset.a === "delete") { await lib({ op: "admin_delete", id: x.id }); list = list.filter((y) => y.id !== x.id); toast("Đã xóa " + who); }
+          else { await lib({ op: "admin_status", id: x.id, status: b.dataset.a }); x.status = b.dataset.a; toast((b.dataset.a === "approved" ? "Đã duyệt " : "Đã khóa ") + who); }
+          const n = list.filter((y) => y.status === "pending").length; $("#pendBadge").textContent = n; $("#pendBadge").classList.toggle("hidden", !n); draw();
+        } catch (e) { toast(e.message, true); b.disabled = false; }
+      });
+    };
+    $("#aseg").querySelectorAll("button").forEach((b) => b.onclick = () => { admF = b.dataset.f; draw(); });
+    $("#aq").oninput = draw; draw();
   }
 
   // ---------------- Thư viện ----------------
