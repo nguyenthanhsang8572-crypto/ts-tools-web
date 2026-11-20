@@ -188,10 +188,22 @@
     }
     $("#fm").style.display = fam.shown < list.length ? "" : "none";
   }
+  /** Tải family đúng tên: lấy file qua hàm lib (có đăng nhập) → lưu bằng tên family; lỗi → link tải trực tiếp (tên theo mã). */
   async function download(it, btn) {
-    btn.disabled = true; const t = btn.textContent; btn.textContent = "Đang chuẩn bị…";
-    try { const r = await lib({ op: "family", id: it.id }); const a = document.createElement("a"); a.href = r.url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); toast("Đang tải: " + r.name); }
-    catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.textContent = t; }
+    btn.disabled = true; const t = btn.textContent; const name = it.name + it.ext;
+    const save = (href) => { const a = document.createElement("a"); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+    try {
+      btn.textContent = "Đang tải… 0%";
+      const r = await fetch(`${C.SUPABASE_URL}/functions/v1/lib?op=file&id=${encodeURIComponent(it.id)}`, { headers: { Authorization: `Bearer ${session.access_token}`, apikey: C.SUPABASE_ANON_KEY } });
+      if (!r.ok || !r.body) throw new Error((await r.json().catch(() => ({}))).error || "HTTP " + r.status);
+      const total = +r.headers.get("Content-Length") || it.size; const rd = r.body.getReader(); const parts = []; let got = 0;
+      for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; btn.textContent = `Đang tải… ${Math.min(99, Math.round(got * 100 / total))}%`; }
+      const url = URL.createObjectURL(new Blob(parts, { type: "application/octet-stream" })); save(url); setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast("Đã tải: " + name);
+    } catch (e) {
+      try { const r = await lib({ op: "family", id: it.id }); save(r.url); toast(`Tải trực tiếp (tên file theo mã) – đổi tên thành: ${name}`); }
+      catch (e2) { toast(e2.message || e.message, true); }
+    } finally { btn.disabled = false; btn.textContent = t; }
   }
 
   // ---------------- Download bộ cài ----------------
