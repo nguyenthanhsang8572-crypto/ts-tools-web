@@ -100,10 +100,15 @@
 
   // ---------------- Quản trị (chỉ is_admin) ----------------
   let admF = "pending";
+  let admTab = "users";
   async function pageAdmin(m) {
-    m.innerHTML = `<div class="ptitle"><h2>Quản trị tài khoản</h2><span>Duyệt / khóa / xóa người dùng</span></div>
+    if (admTab === "lic") return pageAdminLicense(m);
+    m.innerHTML = `<div class="ptitle"><h2>Quản trị</h2><div class="seg" id="atab"><button class="on">Tài khoản</button><button data-t="lic">License</button></div></div>`;
+    $("#atab [data-t]").onclick = () => { admTab = "lic"; pageAdmin(m); };
+    m.insertAdjacentHTML("beforeend", `<div class="muted" style="margin:-8px 0 12px">Duyệt / khóa / xóa người dùng</div>`);
+    m.insertAdjacentHTML("beforeend", `
       <div class="toolbar"><div class="seg" id="aseg"><button data-f="pending">Chờ duyệt</button><button data-f="approved">Đã duyệt</button><button data-f="locked">Bị khóa</button><button data-f="">Tất cả</button></div>
-      <input id="aq" placeholder="Tìm theo tên / email / công ty…" style="max-width:320px"></div><div class="panel" id="at"><div class="empty">Đang tải…</div></div>`;
+      <input id="aq" placeholder="Tìm theo tên / email / công ty…" style="max-width:320px"></div><div class="panel" id="at"><div class="empty">Đang tải…</div></div>`);
     let list = [];
     try { list = await lib({ op: "admin_list" }); } catch (e) { $("#at").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
     const S = { pending: ["Chờ duyệt", "warn"], approved: ["Đã duyệt", "ok"], locked: ["Bị khóa", "bad"] };
@@ -226,21 +231,64 @@
     });
   }
 
-  // ---------------- License ----------------
+  // ---------------- License (người dùng) ----------------
+  const LS = { active: ["Hoạt động", "ok"], locked: ["Bị khóa", "bad"], expired: ["Hết hạn", "gray"] };
+  const licExp = (l) => l.expires_at ? dt(l.expires_at) : "Vĩnh viễn";
   async function pageLicense(m) {
-    m.innerHTML = `<div class="ptitle"><h2>License của bạn</h2></div><div class="panel" id="lt"><div class="empty">Đang tải…</div></div>`;
+    m.innerHTML = `<div class="ptitle"><h2>License của bạn</h2><span>Dán key vào nút <b>License</b> trên ribbon TS TOOLS trong Revit để kích hoạt</span></div><div id="lt"><div class="panel empty">Đang tải…</div></div>`;
     const { data, error } = await sb.from("licenses").select("*").order("created_at", { ascending: false });
-    if (error) return $("#lt").innerHTML = `<div class="empty">${esc(error.message)}</div>`;
-    if (!data.length) return $("#lt").innerHTML = `<div class="empty">Bạn chưa có license nào.</div>`;
-    const S = { active: ["Hoạt động", "ok"], locked: ["Bị khóa", "bad"], expired: ["Hết hạn", "gray"] };
-    $("#lt").innerHTML = `<table><thead><tr><th>#</th><th>Gói</th><th>Key</th><th>Thiết bị</th><th>Thời hạn</th><th>Hết hạn</th><th>Trạng thái</th></tr></thead><tbody>${
-      data.map((l, i) => { const masked = l.license_key.replace(/[^-](?=.{5})/g, "•"); const s = S[l.status] || [l.status, "gray"];
-        return `<tr><td>${i + 1}</td><td><span class="pill cy">${esc(l.package)}</span><div class="muted small">${esc(l.product)}${l.order_code ? " · #" + esc(l.order_code) : ""}</div></td>
-        <td><span class="key" data-k="${esc(l.license_key)}" data-m="${esc(masked)}">${esc(masked)}</span> <button class="eye" title="Hiện / ẩn">👁</button></td>
-        <td>${l.devices_used}/${l.devices_max}</td><td>${l.months} tháng</td><td>${dt(l.expires_at)}</td><td><span class="pill ${s[1]}">${s[0]}</span></td></tr>`; }).join("")}</tbody></table>`;
-    m.querySelectorAll(".eye").forEach((b) => b.onclick = () => { const k = b.previousElementSibling; k.textContent = k.textContent === k.dataset.m ? k.dataset.k : k.dataset.m; });
+    if (error) return $("#lt").innerHTML = `<div class="panel empty">${esc(error.message)}</div>`;
+    if (!data.length) return $("#lt").innerHTML = `<div class="panel empty">Bạn chưa có license nào – liên hệ quản trị TS TOOLS.</div>`;
+    const { data: devs } = await sb.from("license_devices").select("*");
+    $("#lt").innerHTML = data.map((l) => { const s = LS[l.status] || [l.status, "gray"]; const ds = (devs || []).filter((d) => d.license_id === l.id);
+      return `<div class="panel lic"><div class="lic-h"><div><span class="pill cy">${esc(l.package)}</span> <span class="pill ${s[1]}">${s[0]}</span>
+        <div class="key big" data-k="${esc(l.license_key)}">${esc(l.license_key)}</div></div><button class="btn" data-copy="${esc(l.license_key)}">⧉ Sao chép key</button></div>
+        <div class="lic-g"><div><span class="muted">Hết hạn</span><b>${licExp(l)}</b></div><div><span class="muted">Máy</span><b>${ds.length} / ${l.devices_max}</b></div><div><span class="muted">Sản phẩm</span><b>${esc(l.product)}</b></div></div>
+        ${ds.length ? `<table><thead><tr><th>Máy</th><th>Revit</th><th>Kích hoạt</th><th>Lần dùng cuối</th><th></th></tr></thead><tbody>${ds.map((d) => `<tr><td>${esc(d.machine_name || "—")}<div class="muted small mono">${esc(d.machine_hash.slice(0, 12))}…</div></td><td>${esc(d.revit)}</td><td>${dt(d.activated_at)}</td><td>${dt(d.last_seen)}</td><td><button class="btn" data-rm="${d.id}">Gỡ máy</button></td></tr>`).join("")}</tbody></table>` : `<div class="muted small">Chưa kích hoạt máy nào.</div>`}</div>`; }).join("");
+    m.querySelectorAll("[data-copy]").forEach((b) => b.onclick = () => { navigator.clipboard.writeText(b.dataset.copy); toast("Đã sao chép key."); });
+    m.querySelectorAll("[data-rm]").forEach((b) => b.onclick = async () => { if (!confirm("Gỡ máy này khỏi license? (máy đó sẽ phải kích hoạt lại)")) return; try { await lib({ op: "my_dev_remove", id: b.dataset.rm }); toast("Đã gỡ máy."); pageLicense(m); } catch (e) { toast(e.message, true); } });
   }
 
+  // ---------------- Quản trị License ----------------
+  async function pageAdminLicense(m) {
+    m.innerHTML = `<div class="ptitle"><h2>Quản trị</h2><div class="seg" id="atab"><button data-t="users">Tài khoản</button><button class="on">License</button></div></div>
+      <form class="panel" id="lf"><h3 style="margin:0 0 4px">Cấp license mới</h3><div class="lic-form">
+        <label>Người dùng<select name="user" id="lfu" required><option value="">— đang tải —</option></select></label>
+        <label>Thời hạn<select name="months"><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12" selected>12 tháng</option><option value="24">24 tháng</option><option value="0">Vĩnh viễn</option></select></label>
+        <label>Số máy<input name="devices" type="number" min="1" value="1"></label>
+        <label>Gói<input name="package" value="STANDARD"></label>
+        <label class="full">Ghi chú<input name="note" placeholder="vd: đơn #123, thanh toán CK ngày…"></label></div>
+        <button class="btn primary" type="submit" style="margin-top:14px">＋ Tạo key</button> <span id="newKey" class="key big" style="margin-left:12px"></span></form>
+      <div class="toolbar" style="margin-top:18px"><input id="lq" placeholder="Tìm theo key / email / tên…" style="max-width:340px"></div><div id="ll"><div class="panel empty">Đang tải…</div></div>`;
+    $("#atab [data-t]").onclick = () => { admTab = "users"; pageAdmin(m); };
+    let users = [], lics = [];
+    try { [users, lics] = await Promise.all([lib({ op: "admin_list" }), lib({ op: "admin_lic_list" })]); } catch (e) { $("#ll").innerHTML = `<div class="panel empty">${esc(e.message)}</div>`; return; }
+    $("#lfu").innerHTML = `<option value="">— chọn người dùng —</option>` + users.filter((u) => u.status === "approved").map((u) => `<option value="${u.id}">${esc([u.ho_ten_dem, u.ten].filter(Boolean).join(" ") || u.email)} · ${esc(u.email)}</option>`).join("");
+    $("#lf").onsubmit = async (e) => {
+      e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)); if (!f.user) return toast("Chọn người dùng.", true);
+      try { const l = await lib({ op: "admin_lic_create", ...f }); $("#newKey").textContent = l.license_key; navigator.clipboard?.writeText(l.license_key); toast("Đã tạo key (đã sao chép)."); lics = await lib({ op: "admin_lic_list" }); draw(); }
+      catch (er) { toast(er.message, true); }
+    };
+    const act = async (params, msg) => { try { await lib(params); toast(msg); lics = await lib({ op: "admin_lic_list" }); draw(); } catch (e) { toast(e.message, true); } };
+    const draw = () => {
+      const q = $("#lq").value.trim().toLowerCase();
+      const rows = lics.filter((l) => !q || [l.license_key, l.user?.email, l.user?.ten, l.user?.ho_ten_dem, l.note].join(" ").toLowerCase().includes(q));
+      $("#ll").innerHTML = rows.length ? rows.map((l) => { const s = LS[l.status] || [l.status, "gray"]; const exp = l.expires_at && Date.parse(l.expires_at) < Date.now();
+        return `<div class="panel lic"><div class="lic-h"><div><span class="pill cy">${esc(l.package)}</span> <span class="pill ${exp ? "gray" : s[1]}">${exp ? "Hết hạn" : s[0]}</span>
+          <div class="key big">${esc(l.license_key)}</div><div class="muted small">${esc([l.user?.ho_ten_dem, l.user?.ten].filter(Boolean).join(" "))} · ${esc(l.user?.email || "(đã xóa)")}${l.note ? " · " + esc(l.note) : ""}</div></div>
+          <div class="lic-acts"><button class="btn" data-copy="${esc(l.license_key)}">⧉ Key</button>
+            ${l.status === "locked" ? `<button class="btn" data-st="active" data-id="${l.id}">Mở khóa</button>` : `<button class="btn" data-st="locked" data-id="${l.id}" style="color:var(--bad)">Khóa</button>`}
+            <button class="btn" data-ext="${l.id}">Gia hạn</button><button class="btn" data-dev="${l.id}" data-cur="${l.devices_max}">Số máy</button></div></div>
+          <div class="lic-g"><div><span class="muted">Hết hạn</span><b>${licExp(l)}</b></div><div><span class="muted">Máy</span><b>${l.devices.length} / ${l.devices_max}</b></div><div><span class="muted">Tạo</span><b>${dt(l.created_at)}</b></div></div>
+          ${l.devices.length ? `<table><tbody>${l.devices.map((d) => `<tr><td>${esc(d.machine_name || "—")} <span class="muted small mono">${esc(d.machine_hash.slice(0, 10))}…</span></td><td>${esc(d.revit)} · v${esc(d.addin_version)}</td><td>Dùng cuối ${dt(d.last_seen)}</td><td><button class="btn" data-rmd="${d.id}">Gỡ máy</button></td></tr>`).join("")}</tbody></table>` : ""}</div>`; }).join("") : `<div class="panel empty">Chưa có license.</div>`;
+      $("#ll").querySelectorAll("[data-copy]").forEach((b) => b.onclick = () => { navigator.clipboard.writeText(b.dataset.copy); toast("Đã sao chép key."); });
+      $("#ll").querySelectorAll("[data-st]").forEach((b) => b.onclick = () => act({ op: "admin_lic_set", id: b.dataset.id, status: b.dataset.st }, b.dataset.st === "locked" ? "Đã khóa license." : "Đã mở khóa."));
+      $("#ll").querySelectorAll("[data-ext]").forEach((b) => b.onclick = () => { const n = prompt("Gia hạn thêm bao nhiêu tháng?", "12"); if (n && +n > 0) act({ op: "admin_lic_set", id: b.dataset.ext, extend: n }, `Đã gia hạn ${n} tháng.`); });
+      $("#ll").querySelectorAll("[data-dev]").forEach((b) => b.onclick = () => { const n = prompt("Số máy tối đa:", b.dataset.cur); if (n && +n > 0) act({ op: "admin_lic_set", id: b.dataset.dev, devices: n }, "Đã đổi số máy."); });
+      $("#ll").querySelectorAll("[data-rmd]").forEach((b) => b.onclick = () => { if (confirm("Gỡ máy này khỏi license?")) act({ op: "admin_dev_remove", id: b.dataset.rmd }, "Đã gỡ máy."); });
+    };
+    $("#lq").oninput = draw; draw();
+  }
   // ---------------- Đơn hàng ----------------
   async function pageOrders(m) {
     m.innerHTML = `<div class="ptitle"><h2>Đơn hàng</h2></div><div class="panel" id="ot"><div class="empty">Đang tải…</div></div>`;

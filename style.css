@@ -170,3 +170,11 @@ tr:hover td { background: #fafcfe; }
 .auth-seg { margin-bottom: 18px; } .auth-seg button { padding: 9px 18px; }
 .badge { font-style: normal; display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: #ff5d5d; color: #fff; font: 700 11px/18px inherit; text-align: center; }
 td .btn { padding: 7px 12px; font-size: 13px; }
+
+/* license */
+.lic { margin-bottom: 14px; } .lic-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.key.big { font-size: 18px; letter-spacing: 1px; margin: 8px 0 4px; color: var(--navy); }
+.lic-g { display: flex; gap: 28px; margin: 12px 0; flex-wrap: wrap; } .lic-g div { display: flex; flex-direction: column; font-size: 14px; }
+.lic-acts { display: flex; gap: 6px; flex-wrap: wrap; } .lic-acts .btn { padding: 8px 12px; font-size: 13px; }
+.lic-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0 14px; } .lic-form .full { grid-column: 1 / -1; }
+@media (max-width: 960px) { .lic-form { grid-template-columns: 1fr; } }
