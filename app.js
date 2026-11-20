@@ -115,7 +115,7 @@
         <div class="sz">${mb(it.size)}${it.sub ? " · " + esc(it.sub) : " · " + esc(it.cat)}</div></div>`;
       d.querySelector(".dl").onclick = (e) => download(it, e.currentTarget);
       box.appendChild(d);
-      if (it.thumb) lib({ op: "thumb", id: it.id }, true).then((u) => { if (u) d.querySelector(".ph").outerHTML = `<img alt="" src="${u}">`; });
+      if (it.thumb) lib({ op: "thumb", id: it.id, v: it.tv || "" }, true).then((u) => { if (u) d.querySelector(".ph").outerHTML = `<img alt="" src="${u}">`; });
     }
     $("#more").style.display = st.shown < st.list.length ? "" : "none";
   }
