@@ -243,3 +243,20 @@ td .btn { padding: 7px 12px; font-size: 13px; }
 
 
 @media (max-width: 980px) { .auth { min-height: 0; } .auth-main { align-items: start; padding-top: 8px; } }
+
+/* ảnh trái luôn hiện trọn (màn hình thấp / rộng): cột ảnh theo chiều cao màn hình, ảnh contain, nền liền màu */
+@media (min-width: 981px) {
+  .auth { grid-template-columns: minmax(0, min(calc(100vh * 1060 / 941), 64vw)) minmax(420px, 1fr); }
+  .auth-hero { background-size: contain; background-position: left center; background-color: #061433; }
+}
+/* trình duyệt tự điền (Chrome / Cốc Cốc / Edge): giữ nền tối, chữ trắng */
+.field input:-webkit-autofill, .field input:-webkit-autofill:hover, .field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff; caret-color: #fff; -webkit-box-shadow: 0 0 0 1000px #0b1f4a inset !important; box-shadow: 0 0 0 1000px #0b1f4a inset !important;
+  transition: background-color 99999s ease-in-out 0s; border-radius: 0 12px 12px 0; }
+/* ảnh trái = thẻ <img> (hiện trọn, không xén) */
+.auth-hero { background: #061433 !important; overflow: hidden; }
+.auth-hero img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center; }
+@media (max-width: 980px) { .auth-hero img { object-position: left top; } }
+.auth-hero::after { z-index: 1; }
+
+@media (max-width: 980px) { .auth { min-height: 100vh; grid-template-rows: auto 1fr; } }
