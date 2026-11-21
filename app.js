@@ -228,7 +228,7 @@
 
   // ---------------- Bộ cài ----------------
   async function pageDownload(m) {
-    m.innerHTML = `<div class="ptitle"><h2>Bộ cài TS TOOLS</h2><span>Add-in Revit</span></div><div class="inst" id="dz"><div class="panel empty">Đang tải…</div></div>`;
+    m.innerHTML = `<div class="ptitle"><h2>Bộ cài TS TOOLS</h2><span>Add-in Revit · Bộ family offline (Quản lý Family)</span></div><div class="inst" id="dz"><div class="panel empty">Đang tải…</div></div>`;
     const { data, error } = await sb.from("installers").select("*").order("sort", { ascending: false });
     if (error) return $("#dz").innerHTML = `<div class="panel empty">${esc(error.message)}</div>`;
     if (!data.length) return $("#dz").innerHTML = `<div class="panel empty">Chưa có bộ cài nào.</div>`;
