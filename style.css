@@ -238,3 +238,6 @@ td .btn { padding: 7px 12px; font-size: 13px; }
 .auth-main { grid-template-columns: minmax(0, 1fr); }
 .auth-main > .glass { justify-self: center; }
 
+
+.auth, .auth * { box-sizing: border-box; }
+
