@@ -22,10 +22,17 @@
     $("#app").classList.add("hidden"); $("#auth").classList.remove("hidden");
     $("#loginForm").classList.toggle("hidden", setPass); $("#setPassForm").classList.toggle("hidden", !setPass); $("#authMsg").textContent = "";
   }
+  // hiện / ẩn mật khẩu · ghi nhớ tài khoản (email lưu trên trình duyệt này)
+  document.querySelectorAll(".eye").forEach((b) => b.onclick = () => {
+    const i = document.getElementById(b.dataset.for); i.type = i.type === "password" ? "text" : "password"; b.classList.toggle("on", i.type === "text");
+  });
+  try { const rem = localStorage.getItem("ts_remember_email"); if (rem) { $("#loginEmail").value = rem; $("#rememberMe").checked = true; } } catch { }
   $("#loginForm").addEventListener("submit", async (e) => {
     e.preventDefault(); $("#authMsg").textContent = "";
-    const { error } = await sb.auth.signInWithPassword({ email: $("#loginEmail").value.trim(), password: $("#loginPass").value });
-    if (error) $("#authMsg").textContent = error.message === "Invalid login credentials" ? "Sai email hoặc mật khẩu." : error.message;
+    const email = $("#loginEmail").value.trim();
+    const { error } = await sb.auth.signInWithPassword({ email, password: $("#loginPass").value });
+    if (error) { $("#authMsg").textContent = error.message === "Invalid login credentials" ? "Sai email hoặc mật khẩu." : error.message; return; }
+    try { if ($("#rememberMe").checked) localStorage.setItem("ts_remember_email", email); else localStorage.removeItem("ts_remember_email"); } catch { }
   });
   $("#forgotLink").addEventListener("click", async (e) => {
     e.preventDefault(); const email = $("#loginEmail").value.trim();

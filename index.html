@@ -5,52 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TS TOOLS – Thư viện Revit MEP</title>
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="logo.png">
+  <link rel="icon" href="img/ts-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202611201001">
+  <link rel="stylesheet" href="style.css?v=202611210730">
 </head>
 <body>
-  <!-- ĐĂNG NHẬP: chia đôi màn hình -->
+  <!-- ĐĂNG NHẬP: ảnh thiết kế TS TOOLS (trái) + khung kính đăng nhập / đăng ký (phải) -->
   <section id="auth" class="auth hidden">
-    <div class="auth-side">
-      <div class="brand"><img src="logo.png" alt=""><b>TS</b><span>TOOLS</span></div>
-      <h1>Thư viện family<br><em>Revit MEP</em> cho kỹ sư Việt</h1>
-      <ul class="feat">
-        <li><b id="statFam">1.400+</b> family xếp theo 24 danh mục</li>
-        <li><b>Ảnh 3D</b> dựng từ chính family</li>
-        <li><b>Tải đúng tên</b>, nạp thẳng vào dự án bằng add-in TS TOOLS</li>
-      </ul>
-      <p class="by">by <a href="https://www.tiktok.com/@kysu_nts2k2" target="_blank" rel="noopener">NTS Kỹ Sư Trẻ</a></p>
-    </div>
+    <div class="auth-hero" role="img" aria-label="TS TOOLS – Work Smarter · Design Better · BIM Together – Bộ công cụ hỗ trợ thiết kế MEP trên Revit và AutoCAD"></div>
     <div class="auth-main">
-      <div class="auth-card">
-        <div class="seg auth-seg" id="authSeg"><button data-f="login" class="on">Đăng nhập</button><button data-f="signup">Đăng ký</button></div>
-        <form id="signupForm" class="hidden">
-          <h2>Đăng ký tài khoản</h2><p class="muted">Sau khi đăng ký, quản trị TS TOOLS sẽ phê duyệt để bạn tải được family.</p>
-          <div class="fgrid">
-            <label>Họ và tên đệm<input name="ho_ten_dem" required></label><label>Tên<input name="ten" required></label>
-            <label>Số điện thoại<input name="phone" required></label><label>Công ty<input name="company"></label>
-          </div>
-          <label>Email<input type="email" name="email" required autocomplete="username"></label>
-          <label>Mật khẩu (≥ 8 ký tự)<input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
-          <button class="btn primary wide" type="submit">Gửi đăng ký →</button>
-        </form>
+      <div class="auth-card glass">
+        <div class="auth-tabs" id="authSeg">
+          <button data-f="login" class="on" type="button"><svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>Đăng nhập</button>
+          <button data-f="signup" type="button"><svg viewBox="0 0 24 24"><path d="m14.1 5.6 4.3 4.3L8.3 20H4v-4.3L14.1 5.6Zm1.4-1.4 1.8-1.8a1.5 1.5 0 0 1 2.1 0l2.2 2.2a1.5 1.5 0 0 1 0 2.1l-1.8 1.8-4.3-4.3Z"/></svg>Đăng ký</button>
+        </div>
         <form id="loginForm">
-          <h2>Đăng nhập</h2><p class="muted">Chưa có tài khoản? Chọn <b>Đăng ký</b> ở trên.</p>
-          <label>Email<input type="email" id="loginEmail" required autocomplete="username"></label>
-          <label>Mật khẩu<input type="password" id="loginPass" required autocomplete="current-password"></label>
-          <button class="btn primary wide" type="submit">Đăng nhập →</button>
-          <a href="#" id="forgotLink" class="link">Quên mật khẩu?</a>
+          <h2>Đăng nhập</h2><p class="sub">Chào mừng bạn đến với TS TOOLS</p>
+          <div class="field"><svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Zm2 .6V17h14V7.1l-7 5.2-7-5.2ZM6.6 7l5.4 4 5.4-4H6.6Z"/></svg>
+            <input type="email" id="loginEmail" required autocomplete="username" placeholder="Email"></div>
+          <div class="field"><svg viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1Zm2 0h6V8a3 3 0 0 0-6 0v2Zm-2 2v7h10v-7H7Z"/></svg>
+            <input type="password" id="loginPass" required autocomplete="current-password" placeholder="Mật khẩu">
+            <button type="button" class="eye" data-for="loginPass" title="Hiện / ẩn mật khẩu"><svg viewBox="0 0 24 24"><path d="M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7Zm0 2C8.4 7 5.3 9.9 4.2 12c1.1 2.1 4.2 5 7.8 5s6.7-2.9 7.8-5C18.7 9.9 15.6 7 12 7Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/></svg></button></div>
+          <button class="btn-go" type="submit"><svg viewBox="0 0 24 24"><path d="M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-5 5 5 5ZM4 3h7v2H4v14h7v2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" transform="matrix(-1 0 0 1 24 0)"/></svg>Đăng nhập <span>→</span></button>
+          <div class="row-opt"><label class="chk"><input type="checkbox" id="rememberMe"> Ghi nhớ tài khoản</label><a href="#" id="forgotLink">Quên mật khẩu?</a></div>
+        </form>
+        <form id="signupForm" class="hidden">
+          <h2>Đăng ký</h2><p class="sub">Tạo tài khoản – quản trị TS TOOLS sẽ phê duyệt để bạn tải được family.</p>
+          <div class="fgrid">
+            <div class="field sm"><input name="ho_ten_dem" required placeholder="Họ và tên đệm"></div><div class="field sm"><input name="ten" required placeholder="Tên"></div>
+            <div class="field sm"><input name="phone" required placeholder="Số điện thoại"></div><div class="field sm"><input name="company" placeholder="Công ty"></div>
+          </div>
+          <div class="field sm"><input type="email" name="email" required autocomplete="username" placeholder="Email"></div>
+          <div class="field sm"><input type="password" name="password" id="signPass" minlength="8" required autocomplete="new-password" placeholder="Mật khẩu (≥ 8 ký tự)">
+            <button type="button" class="eye" data-for="signPass" title="Hiện / ẩn mật khẩu"><svg viewBox="0 0 24 24"><path d="M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7Zm0 2C8.4 7 5.3 9.9 4.2 12c1.1 2.1 4.2 5 7.8 5s6.7-2.9 7.8-5C18.7 9.9 15.6 7 12 7Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/></svg></button></div>
+          <button class="btn-go" type="submit">Gửi đăng ký <span>→</span></button>
         </form>
         <form id="setPassForm" class="hidden">
-          <h2>Đặt mật khẩu</h2><p class="muted">Bạn được mời vào TS TOOLS – đặt mật khẩu để bắt đầu.</p>
-          <label>Mật khẩu mới<input type="password" id="newPass1" required minlength="8" autocomplete="new-password"></label>
-          <label>Nhập lại<input type="password" id="newPass2" required minlength="8" autocomplete="new-password"></label>
-          <button class="btn primary wide" type="submit">Lưu mật khẩu</button>
+          <h2>Đặt mật khẩu</h2><p class="sub">Bạn được mời vào TS TOOLS – đặt mật khẩu để bắt đầu.</p>
+          <div class="field sm"><input type="password" id="newPass1" required minlength="8" autocomplete="new-password" placeholder="Mật khẩu mới"></div>
+          <div class="field sm"><input type="password" id="newPass2" required minlength="8" autocomplete="new-password" placeholder="Nhập lại mật khẩu"></div>
+          <button class="btn-go" type="submit">Lưu mật khẩu</button>
         </form>
         <p id="authMsg" class="msg"></p>
-        <p class="muted small">Tài khoản mới cần quản trị TS TOOLS phê duyệt trước khi tải family.</p>
+        <div class="glow-line"></div>
+        <p class="slogan">Cùng TS TOOLS kiến tạo những công trình thông minh hơn!</p>
       </div>
     </div>
   </section>
@@ -59,7 +58,7 @@
   <section id="app" class="hidden">
     <header class="nav">
       <div class="nav-in">
-        <a class="brand" href="#library"><img src="logo.png" alt=""><b>TS</b><span>TOOLS</span></a>
+        <a class="brand" href="#library"><img src="img/ts-icon.png" alt=""><b>TS</b><span>TOOLS</span></a>
         <nav class="tabs" id="tabs">
           <a href="#library" data-page="library">Thư viện</a>
           <a href="#video" data-page="video">Video</a>
@@ -77,8 +76,8 @@
   </section>
 
   <div id="toast" class="toast"></div>
-  <script src="config.js?v=202611201001"></script>
+  <script src="config.js?v=202611210730"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="app.js?v=202611201001"></script>
+  <script src="app.js?v=202611210730"></script>
 </body>
 </html>
